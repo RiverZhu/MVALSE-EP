@@ -19,7 +19,7 @@ DOAs_grid = [-30;-3;2;30;75];
 Ktrue    = length(DOAs_grid);    
 B_all = [1;3;5];
 
-NMSE = zeros(Iter_max,length(B_all));
+NMSE = zeros(Iter_max,length(B_all)+1);
 tic
 bias = (2*rand(Ktrue,1)-1)/4;
 DOAs = DOAs_grid+bias;
@@ -81,6 +81,16 @@ for bit_idx = 1:length(B_all)
 end
 toc
 
+result_MVALSE = MVALSE_IID( Y_M, Mcal, 2, Z);
+weight_est_MVALSE = mean(abs(result_MVALSE.amps).^2,2);
+figure(bit_idx+1)
+polarplot(omega,gain_true_ave,'ro')
+hold on
+polarplot(result_MVALSE.freqs,weight_est_MVALSE,'b+')
+legend('Truth','Est (B=\infty)','Fontsize',14)
+NMSE(:,bit_idx+1) = result_MVALSE.mse(1:Iter_max);
+
+
 lw = 1.6;
 fsz = 14;
 msz = 6;
@@ -91,9 +101,10 @@ plot(iter_num,10*log10(NMSE(iter_num,1)),'-rs','LineWidth',lw,'MarkerSize',msz)
 hold on
 plot(iter_num,10*log10(NMSE(iter_num,2)),'-bo','LineWidth',lw,'MarkerSize',msz)
 plot(iter_num,10*log10(NMSE(iter_num,3)),'-md','LineWidth',lw,'MarkerSize',msz)
+plot(iter_num,10*log10(NMSE(iter_num,4)),'-kx','LineWidth',lw,'MarkerSize',msz)
 legend(['B=',num2str(B_all(1))],...
     ['B=',num2str(B_all(2))],...
-    ['B=',num2str(B_all(3))],...
+    ['B=',num2str(B_all(3))],'B=\infty',...
     'Fontsize',fsz)
 xlabel('${\rm SNR}_{\rm min}$ dB','Interpreter','latex','FontSize',fsz)
 ylabel('${\rm NMSE}(\hat{\mathbf Z})$ (dB)','Interpreter','latex','FontSize',fsz)
